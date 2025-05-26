@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Editor</title>
+    <link rel="stylesheet" href="../../styles.css" />
+    <link rel="stylesheet" href="../css/editormd.css" />
+</head>
+
+<body>
+    <div id="layout">
+        <header>
+        </header>
+        <div id="test-editormd"></div>
+    </div>
+    <script src="js/jquery.min.js"></script>
+    <script src="../editormd.js"></script>
+    <script src="../languages/en.js"></script>
+    <script type="text/javascript">
+        var testEditor;
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Extract the 'doc' parameter from the URL
+        const docFileName = getQueryParam("doc");
+
+        if (docFileName) {
+            // Construct the URL to fetch the markdown file
+            const fileUrl = `http://localhost:8000/outputs/${encodeURIComponent(docFileName)}`;
+
+            // Perform a GET request to fetch the markdown file
+            fetch(fileUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error fetching file: ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(mdContent => {
+                    // Load the content into the editor
+                    testEditor = editormd("test-editormd", {
+                        width: "90%",
+                        height: 740,
+                        path: "../lib/",
+                        theme: "dark",
+                        previewTheme: "dark",
+                        editorTheme: "dark",
+                        markdown: mdContent,
+                        codeFold: true,
+                        saveHTMLToTextarea: true,
+                        searchReplace: true,
+                        htmlDecode: "style,script,iframe|on*",
+                        emoji: true,
+                        taskList: true,
+                        tocm: true,
+                        tex: true,
+                        flowChart: true,
+                        sequenceDiagram: true,
+                        imageUpload: true,
+                        imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+                        imageUploadURL: "./php/upload.php",
+                        onload: function () {
+                            console.log("Markdown file loaded:", docFileName);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error("Error loading markdown file:", error);
+                });
+        } else {
+            console.error("No 'doc' parameter found in URL");
+        }
+
+    </script>
+</body>
+
+</html>

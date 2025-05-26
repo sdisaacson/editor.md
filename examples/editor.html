@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Editor</title>
+    <link rel="stylesheet" href="../../styles.css" />
+    <link rel="stylesheet" href="../css/editormd.css" />
+</head>
+
+<body>
+    <div id="layout">
+        <header>
+        </header>
+        <div id="test-editormd"></div>
+    </div>
+    
+    <!-- Load necessary scripts for the editor -->
+    <script src="js/jquery.min.js"></script>
+    <script src="../editormd.js"></script>
+    <script src="../languages/en.js"></script>
+    
+    <script type="text/javascript">
+        var testEditor;
+        
+        /**
+         * Function to retrieve a query parameter from the URL.
+         * @param {string} param - The name of the parameter to fetch.
+         * @returns {string|null} - The value of the parameter or null if not found.
+         */
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Extract the 'doc' parameter from the URL, which specifies the markdown file path.
+        const docFilePath = getQueryParam("doc");
+
+        if (docFilePath) {
+            // Construct the URL to fetch the markdown file from the server.
+            const fileUrl = `http://localhost:8000/${docFilePath}`;
+
+            // Perform a GET request to fetch the markdown file
+            fetch(fileUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error fetching file: ${response.statusText}`);
+                    }
+                    return response.text(); // Convert response to text format
+                })
+                .then(mdContent => {
+                    // Initialize the markdown editor with the fetched content
+                    testEditor = editormd("test-editormd", {
+                        width: "90%",
+                        height: 740,
+                        path: "../lib/", // Path to the editor dependencies
+                        theme: "dark",
+                        previewTheme: "dark",
+                        editorTheme: "pastel-on-dark",
+                        markdown: mdContent, // Load the fetched markdown content into the editor
+                        codeFold: true,
+                        saveHTMLToTextarea: true,
+                        searchReplace: true,
+                        htmlDecode: "style,script,iframe|on*", // Allow limited HTML decoding
+                        emoji: true,
+                        taskList: true,
+                        tocm: true,
+                        tex: true, // Enable LaTeX support
+                        flowChart: true,
+                        sequenceDiagram: true,
+                        imageUpload: true, // Enable image uploads
+                        imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+                        imageUploadURL: "./php/upload.php", // Server URL for handling image uploads
+                        onload: function () {
+                            console.log("Markdown file loaded:", docFilePath);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error("Error loading markdown file:", error);
+                });
+        } else {
+            console.error("No 'doc' parameter found in URL");
+        }
+    </script>
+</body>
+
+</html>
